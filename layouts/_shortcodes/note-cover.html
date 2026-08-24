@@ -12,9 +12,28 @@
   Styles live in nplus-book-core/assets/_custom.scss under `.note-cover`.
 */}}
 
-{{ $title := .Get "title" }}
-{{ $src   := .Get "src" }}
+{{/*
+  Metadata comes from the page's `book:` frontmatter map — the same contract
+  book-cover.html already uses. Shortcode arguments are not queryable from other
+  templates, so values that live only in the shortcode call never reach
+  layouts/index.json, and the portal has to re-parse them out of the GitHub repo
+  description instead. The handbooks were the last stations still in that state.
+
+  Inline arguments still win when present, so a station can be migrated (or
+  rolled back) one file at a time without the cover ever rendering blank.
+
+  `book.tags` accepts either a YAML list or the comma-separated string the
+  inline argument uses; both end up as one comma-separated string here.
+*/}}
+{{ $book  := .Page.Params.book | default dict }}
+{{ $title := or (.Get "title") $book.title }}
+{{ $src   := or (.Get "src") $book.cover }}
 {{ $tags  := .Get "tags" }}
+{{ if not $tags }}
+  {{ with $book.tags }}
+    {{ $tags = cond (reflect.IsSlice .) (delimit . ",") . }}
+  {{ end }}
+{{ end }}
 
 {{/* Page Bundle resource → fallback to raw path / URL。Page bundle 圖縮成
      640px 寬（版面 320px 的 2× DPI）的 WebP，理由同 book-cover.html。 */}}
@@ -68,7 +87,7 @@
 
         <h2 class="note-cover__title">{{ $title }}</h2>
 
-        {{ with .Inner }}
+        {{ with or .Inner $book.blurb }}
         <div class="note-cover__description">{{ . | markdownify }}</div>
         {{ end }}
 
