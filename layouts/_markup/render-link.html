@@ -1,12 +1,16 @@
 {{/*
-  外部連結一律開新分頁，並在後面附一個小標記；購書連結另外上色。
+  外部連結一律開新分頁；購書連結另外上色，並附一個購物車標記。
+
+  一般外部連結**不加任何角標**。整個星系的姊妹站互連都寫成絕對網址
+  （https://nplus.wiki/...），凡是 http(s) 就加箭頭會把自家站標成外站，讀起來
+  是雜訊而不是資訊——所以角標只留給真的需要提醒「這是購書連結」的 Amazon。
 
   三個容易寫錯的地方：
   - class 用 slice + delimit 組，不要兩個 if 直接串接——後者會讓內部連結輸出
     class=" "（空白但存在）。
   - Amazon 判斷比對**主機名**，不是 strings.Contains $dest "amazon"：後者會把
     not-amazon.example.com 也當成購書連結。
-  - 標記的抑制條件看**連結文字**是不是 <img>（[![alt](圖)](網址)），不是看目的
+  - 角標的抑制條件看**連結文字**是不是 <img>（[![alt](圖)](網址)），不是看目的
     網址的副檔名——會被角標破壞的是圖片連結。
 */}}
 {{- $dest := .Destination -}}
@@ -24,4 +28,4 @@
 
 {{- $textIsImage := strings.Contains .Text "<img" -}}
 {{- /* prettier-ignore */ -}}
-<a href="{{ $dest | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $classes }} class="{{ delimit . " " }}"{{ end }}{{ if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}>{{- .Text | safeHTML -}}{{- if and $isExternal (not $textIsImage) -}}<sup class="link-marker" aria-hidden="true">{{ if $isAmazon }}🛒{{ else }}↗{{ end }}</sup>{{- end -}}</a>
+<a href="{{ $dest | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ with $classes }} class="{{ delimit . " " }}"{{ end }}{{ if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}>{{- .Text | safeHTML -}}{{- if and $isAmazon (not $textIsImage) -}}<sup class="link-marker" aria-hidden="true">🛒</sup>{{- end -}}</a>
