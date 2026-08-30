@@ -369,8 +369,9 @@ a {
     border: 0;
   }
 
+  /* 不再限寬：面板本身已被 hugo-book 的內容欄限制，再壓 36rem 會讓概覽在桌機
+     只佔欄寬的一半多，右邊空出一大塊。 */
   > p {
-    max-width: 36rem;
     margin: 0 0 var(--space-4);
     line-height: 1.8;
   }

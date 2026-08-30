@@ -123,3 +123,30 @@
     });
   });
 </script>
+
+{{/*
+  KaTeX 自動載入。hugo-book 原生只在 katex shortcode 或 ```katex code fence 時
+  載 KaTeX；用純分隔符（$…$、\(…\)、\[…\]）寫數學的站要靠這段，否則 LaTeX 原文
+  會直接漏在頁面上。偵測本頁 RawContent 有數學才載，站台以 params.autoMath 開關。
+
+  這段刻意收在主題裡：站台若自己放 layouts/partials/docs/inject/head.html，會把
+  整份檔案蓋掉——連上面的主題初始化與 book-overview 分頁一起——首頁的四段概覽
+  就收不成分頁。要往 <head> 加東西，加在這裡並用參數開關，不要在站台覆蓋。
+*/}}
+{{- if .Site.Params.autoMath -}}
+  {{- $raw := .RawContent -}}
+  {{- if or (strings.Contains $raw "$") (strings.Contains $raw "\\(") (strings.Contains $raw "\\[") -}}
+<link rel="stylesheet" href="{{ "katex/katex.min.css" | relURL }}" />
+<script defer src="{{ "katex/katex.min.js" | relURL }}"></script>
+<script defer src="{{ "katex/auto-render.min.js" | relURL }}" onload="renderMathInElement(document.body, {
+  delimiters: [
+    { left: '$$', right: '$$', display: true },
+    { left: '\\[', right: '\\]', display: true },
+    { left: '\\(', right: '\\)', display: false },
+    { left: '$', right: '$', display: false }
+  ],
+  ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+  throwOnError: false
+});"></script>
+  {{- end -}}
+{{- end -}}
