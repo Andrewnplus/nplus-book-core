@@ -2,7 +2,8 @@
   星系共用：每本 handbook / 書 build 出 /index.json，供 nplus-father portal 匯總「已 review」進度。
   reviewable 單位 = docs/ 底下每個 _index.md（一個主題頁）；每筆另帶 `leaf`
   （true = 底下沒有子頁，即真正的葉章節），讓消費端自行決定要算全部頁或只算葉章節。
-  某頁「已 review」的判準：frontmatter `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`）。
+  某頁「已 review」的判準：frontmatter `reviewed: true`（可再加 `reviewedDate: "YYYY-MM-DD"`；
+  `/read-review` skill 與 handbooks 既有頁面寫的是 `reviewed_date`，兩種 key 都吃）。
   books-done 的 Hugo 書用 `read` / `readAt` 慣例，這裡一併吃並映射到同樣的欄位。
   未設 = 未 review（乾淨基線，不需逐頁 stamp）。
 
@@ -15,7 +16,7 @@
 {{- range where site.Pages "Section" "docs" -}}
   {{- if .File -}}
     {{- $reviewed := or (eq .Params.reviewed true) (eq .Params.read true) -}}
-    {{- $reviewedDate := or .Params.reviewedDate .Params.readAt | default "" -}}
+    {{- $reviewedDate := or .Params.reviewedDate .Params.reviewed_date .Params.readAt | default "" -}}
     {{- /*
       `chars` counts runes, not bytes: `len` would report CJK at three times its
       length and make Chinese books look enormous next to English ones. Lines
