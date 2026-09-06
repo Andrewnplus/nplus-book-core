@@ -1,0 +1,33 @@
+{{- /*
+  數學公式的 render hook。站台 hugo.toml 開了 goldmark passthrough 之後，$…$、$$…$$、
+  \(…\)、\[…\] 之間的原文會原封不動送到這裡（不經 Markdown，所以 \\、_、* 都保得住），
+  由 transform.ToMath 在 build 時用 KaTeX 轉成 HTML，瀏覽器不用再載 KaTeX JS。
+
+  單一 $ 也拿來當貨幣符號（「$5 and $10」、「$100-$499」、表格裡的「股價 ($)」），
+  passthrough 分不出來，所以 inline 段沒有反斜線、又含中文、或長得像「數字＋空白」、
+  「數字＋連字號」的，原樣吐回去不當公式。
+*/ -}}
+{{- $inner := .Inner -}}
+{{- $block := eq .Type "block" -}}
+{{- $literal := false -}}
+{{- if and (not $block) (not (strings.Contains $inner "\\")) -}}
+  {{- if or (findRE `\p{Han}` $inner) (findRE `^\d[\d,.]*(\s|[-–—]$)` $inner) -}}
+    {{- $literal = true -}}
+  {{- end -}}
+{{- end -}}
+{{- if $literal -}}
+  {{- printf "$%s$" $inner -}}
+{{- else -}}
+  {{- $opts := dict "output" "htmlAndMathml" "displayMode" $block "strict" "ignore" -}}
+  {{- $res := try (transform.ToMath $inner $opts) -}}
+  {{- with $res.Err -}}
+    {{- warnf "KaTeX: %s: %s" $.Position . -}}
+    {{- $res = try (transform.ToMath $inner (merge $opts (dict "throwOnError" false))) -}}
+  {{- end -}}
+  {{- with $res.Err -}}
+    {{- printf "<code>%s</code>" $inner | safeHTML -}}
+  {{- else -}}
+    {{- $res.Value -}}
+    {{- $.Page.Store.Set "hasMath" true -}}
+  {{- end -}}
+{{- end -}}
