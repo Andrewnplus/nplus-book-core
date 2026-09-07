@@ -417,6 +417,258 @@ a.amazon-link {
 }
 
 /* ------------------------------------------------------------------ */
+/* 校閱模式（assets/review.js）。劃線是內文裡的 <mark class="rv-hl">，     */
+/* 工具列／註記框／面板／toast 是掛在 body 底下的 .rv-ui，全部 fixed。     */
+/* 所有隨明暗變的顏色都走 _variables.scss 的 --hl-* 與 --danger。        */
+/* ------------------------------------------------------------------ */
+
+mark.rv-hl {
+  padding: 0.08em 0;
+  border-radius: 2px;
+  background-color: var(--hl-highlight);
+  color: inherit; /* UA 預設是黑字，深色模式會糊成一團 */
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+mark.rv-hl--fix      { background-color: var(--hl-fix); }
+mark.rv-hl--question { background-color: var(--hl-question); }
+mark.rv-hl--delete {
+  background-color: var(--hl-delete);
+  text-decoration: line-through;
+  text-decoration-color: var(--danger);
+}
+
+/* 校閱模式開著才點得開劃線 */
+:root[data-review="on"] mark.rv-hl {
+  cursor: pointer;
+}
+
+.rv-ui {
+  position: fixed;
+  z-index: 20; /* 上游側欄／TOC 的 z-index 都是 1 */
+  box-sizing: border-box;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--text-sm);
+  line-height: 1.4;
+  box-shadow: var(--shadow-lg);
+}
+
+.rv-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.rv-row + .rv-row,
+.rv-note,
+.rv-panel__list,
+.rv-pop .rv-textarea {
+  margin-top: var(--space-2);
+}
+
+.rv-btn {
+  appearance: none;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--btn-bg);
+  color: var(--btn-text);
+  font: inherit;
+  font-size: var(--text-xs);
+  line-height: 1.2;
+  white-space: nowrap;
+  cursor: pointer;
+
+  &:hover {
+    background-color: var(--btn-bg-hover);
+  }
+}
+
+.rv-btn--primary {
+  border-color: var(--link);
+  background-color: var(--link);
+  color: var(--bg);
+
+  &:hover {
+    background-color: var(--link-hover);
+  }
+}
+
+.rv-btn--danger {
+  color: var(--danger);
+}
+
+/* 四種標記的按鈕帶自己的底色，跟劃出來的線同色，按下去前就知道長什麼樣 */
+.rv-btn--highlight { background-color: var(--hl-highlight); }
+.rv-btn--fix       { background-color: var(--hl-fix); }
+.rv-btn--question  { background-color: var(--hl-question); }
+.rv-btn--delete {
+  background-color: var(--hl-delete);
+  text-decoration: line-through;
+}
+
+.rv-x {
+  padding: 0 0.35rem;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  line-height: 1.4;
+
+  &:hover {
+    background: none;
+    color: var(--danger);
+  }
+}
+
+.rv-textarea {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 16rem;
+  padding: var(--space-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-sm);
+  resize: vertical;
+}
+
+.rv-note__hint {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.rv-select {
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background-color: var(--surface);
+  color: var(--text);
+  font: inherit;
+  font-size: var(--text-xs);
+}
+
+/* 寬度不用 min()：libsass 遇到 rem 混 vw 會以 Incompatible units 中止 build */
+.rv-bar {
+  max-width: calc(100vw - 16px);
+}
+
+.rv-pop {
+  width: 22rem;
+  max-width: calc(100vw - 16px);
+}
+
+.rv-pop__meta {
+  margin: 0 0 var(--space-1);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.rv-pop__quote {
+  max-height: 4.6em;
+  margin: 0 0 var(--space-2);
+  padding-left: var(--space-2);
+  overflow: hidden;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.rv-panel {
+  right: var(--space-4);
+  bottom: var(--space-4);
+  display: none;
+  width: 21rem;
+  max-width: calc(100vw - 2rem);
+}
+
+:root[data-review="on"] .rv-panel {
+  display: block;
+}
+
+.rv-panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.rv-panel__count {
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+}
+
+.rv-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-left: auto;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.rv-panel__list {
+  margin: var(--space-2) 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--text-muted);
+  font-size: var(--text-xs);
+
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-1);
+  }
+
+  li + li {
+    margin-top: 2px;
+  }
+}
+
+.rv-toast {
+  left: 50%;
+  bottom: 5rem;
+  padding: var(--space-2) var(--space-4);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
+/* 側欄「校閱」按鈕：開著時點亮；badge 是全書標記數 */
+.menu-tool[data-review-toggle][aria-pressed="true"] {
+  color: var(--link);
+}
+
+.rv-badge {
+  min-width: 1.2em;
+  padding: 0 0.35em;
+  border-radius: 999px;
+  background-color: var(--link);
+  color: var(--bg);
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.5;
+  text-align: center;
+}
+
+@media print {
+  .rv-ui {
+    display: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------ */
 /* note-cover：多來源整合筆記的 hero 卡                                  */
 /* ------------------------------------------------------------------ */
 

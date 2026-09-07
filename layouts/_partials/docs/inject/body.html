@@ -1,0 +1,22 @@
+{{/*
+  校閱模式（assets/review.js）：在 </body> 前掛上這一頁的識別資料與腳本。
+
+  `source` 是內容檔相對於 content/ 的路徑（docs/01-x/02-y/_index.md），匯出的
+  JSON 就靠它把劃線對回源檔，skill 不必再從網址反推。沒有 .File 的頁面
+  （taxonomy、404）不放資料，腳本一啟動就自行退出。
+
+  `station` 的算法要跟 layouts/index.json 一模一樣：它是 localStorage 的 key，
+  全庫都在 nplus.wiki 同一個 origin 底下，靠它把各本書的標記分開。
+*/}}
+{{- with .File -}}
+<div id="rv-page" hidden
+     data-station="{{ path.Base (strings.TrimSuffix "/" site.BaseURL) }}"
+     data-site="{{ site.BaseURL }}"
+     data-book="{{ site.Title }}"
+     data-source="{{ .Path }}"
+     data-title="{{ $.Title }}"></div>
+{{- end -}}
+{{- with resources.Get "review.js" -}}
+  {{- $js := . | resources.Minify | resources.Fingerprint -}}
+<script src="{{ $js.RelPermalink }}" defer></script>
+{{- end -}}

@@ -91,6 +91,67 @@ inline = [['$', '$']]
   的行內段原樣吐回，不當公式；`$$` 區塊一律當公式。
 - 公式寫錯時 build 只會出 `WARN KaTeX: …`，頁面上以紅字顯示原文，不會讓 deploy 失敗。
 
+## 校閱模式
+
+側欄的「校閱」開關。開著的時候在內文選取文字會浮出四顆按鈕——**重點／修改／疑問／刪除**
+（修改與疑問要先寫註記）——劃線存在瀏覽器的 localStorage，點既有劃線可以改種類、改註記或
+刪除。右下角的面板可以「備註本章」（沒有選取範圍的整章指示）、勾「本章已讀」、**匯出**
+（下載 JSON；手機上走系統分享）、複製 JSON 到剪貼簿、清除已匯出的標記。
+
+匯出的檔案交給 `/book-apply-review` skill，它把標記變成源檔的改動：重點 → `<mark>`、
+修改 → 依註記改稿、刪除 → 刪、疑問 → 討論後決定、已讀 → frontmatter `reviewed: true`。
+
+設計上的幾個硬約束：
+
+- 站台沒有後端，全庫又都在 `nplus.wiki` 同一個 origin 下，所以 localStorage 的 key 是
+  `review:<station>`（station = baseURL 最後一段，跟 `/index.json` 同一個算法）；
+  `review:mode` 記開關。本機 `hugoServer`（localhost）是另一個 origin，各存各的。
+- 定位靠文字不靠 DOM：存選取原文 `exact` 加前後各 30 字 `prefix`／`suffix`。書改版後找
+  不回來的標記在面板顯示「定位失敗」，仍會匯出。
+- 劃線永遠顯示，工具列與面板只在開關開著時出現。
+
+### 匯出格式（`nplus-review/1`）
+
+```json
+{
+  "format": "nplus-review/1",
+  "station": "say-it-with-charts",
+  "site": "https://nplus.wiki/say-it-with-charts/",
+  "book": "用圖表說話：經理人的視覺溝通指南",
+  "exportedAt": "2026-09-07T08:00:00.000Z",
+  "count": 3,
+  "items": [
+    {
+      "id": "rvmf3k2abcd",
+      "kind": "fix",
+      "source": "docs/01-choosing-charts/02-identify-the-comparison/_index.md",
+      "page": "/say-it-with-charts/docs/01-choosing-charts/02-identify-the-comparison/",
+      "title": "辨識比較類型",
+      "heading": "1. 成分比較（component comparison）",
+      "headingId": "1-成分比較component-comparison",
+      "exact": "我們主要關心的是每一部分占總體的百分比",
+      "prefix": "成分比較（component comparison）",
+      "suffix": "。例如：五月，產品 A 占公司總銷售的最大份額。",
+      "note": "「占總體」改成「占整體」，跟第三章一致",
+      "createdAt": "2026-09-07T07:12:03.412Z",
+      "updatedAt": ""
+    }
+  ]
+}
+```
+
+| 欄位 | 說明 |
+|---|---|
+| `kind` | `highlight`（重點）、`fix`（修改）、`question`（疑問）、`delete`（刪除）、`note`（整章備註，沒有 `exact`）、`reviewed`（本章已讀，沒有 `exact`） |
+| `source` | 內容檔相對於 `site/content/` 的路徑，由 Hugo 的 `.File.Path` 寫進頁面，直接對回源檔 |
+| `exact` | 選取的**渲染後**純文字，空白已壓成單一空格；源檔裡通常還帶著 `**`、連結等 Markdown 符號 |
+| `prefix` / `suffix` | 前後各 30 字的上下文，用來在同一句出現多次時挑對位置 |
+| `heading` / `headingId` | 選取範圍上方最近的標題與其錨點 |
+| `note` | 使用者寫的註記；`fix` 與 `question` 必有 |
+
+`items` 依 `source`、再依頁內位置排序。改欄位時 `assets/review.js` 的 `payload()`、這張表
+與 skill 三邊要一起改。
+
 ## 站台參數
 
 | 參數 | 預設 | 用途 |
@@ -110,7 +171,9 @@ inline = [['$', '$']]
 | `assets/_custom.scss` | 元件樣式。不宣告 `:root`，也不寫 `[data-theme]` 選擇器 |
 | `layouts/_partials/docs/inject/head.html` | 主題初始化（同步、防 FOUC）＋ 概覽分頁 JS ＋ KaTeX 樣式 |
 | `layouts/_markup/render-passthrough.html` | `$…$` 公式的 render hook，build 時轉成 KaTeX HTML |
-| `layouts/_partials/docs/inject/menu-before.html` | 側欄工具列與主題切換 |
+| `layouts/_partials/docs/inject/menu-before.html` | 側欄工具列：回 portal、書評、校閱開關、主題切換 |
+| `layouts/_partials/docs/inject/body.html` | 校閱模式：把 station／source 寫進頁面並載入 `review.js` |
+| `assets/review.js` | 校閱模式本體：劃線、註記、localStorage、匯出 |
 | `layouts/_partials/docs/menu-filetree.html` | 上游整份 override，只加已讀勾勾。升級主題要對 diff |
 | `layouts/index.json` | `/index.json`，portal 用來匯總 review 進度 |
 

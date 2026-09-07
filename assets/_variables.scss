@@ -39,6 +39,14 @@
   --accent-hover: #6d4700;
   --accent-wash:  rgba(138, 90, 0, 0.10);
   --success:      #136c39;   /*  6.5:1 on bg — 已讀勾勾 */
+  --danger:       #b91c1c;   /*  5.9:1 on bg — 刪除類按鈕 */
+
+  /* 校閱模式的劃線底色（assets/review.js）。文字色一律 inherit，四種標記只靠
+     底色分辨；用半透明是為了疊在 --surface 或 code 底上也不會變成一塊實色。 */
+  --hl-highlight: rgba(250, 204, 21, 0.45);
+  --hl-fix:       rgba(37, 99, 235, 0.16);
+  --hl-question:  rgba(124, 58, 237, 0.16);
+  --hl-delete:    rgba(185, 28, 28, 0.14);
 
   --btn-bg:       #eef1f5;
   --btn-bg-hover: #e2e7ee;
@@ -89,6 +97,13 @@
   --accent-hover: #f0b429;
   --accent-wash:  rgba(227, 160, 8, 0.14);
   --success:      #4ade80;   /*  9.5:1 on bg */
+  --danger:       #ff7b72;   /*  7.0:1 on bg */
+
+  /* 深色底下不透明度調低，否則會把 --text 的對比吃掉 */
+  --hl-highlight: rgba(250, 204, 21, 0.30);
+  --hl-fix:       rgba(108, 182, 255, 0.24);
+  --hl-question:  rgba(201, 164, 255, 0.24);
+  --hl-delete:    rgba(255, 123, 114, 0.22);
 
   --btn-bg:       #2d333b;
   --btn-bg-hover: #3a424c;
