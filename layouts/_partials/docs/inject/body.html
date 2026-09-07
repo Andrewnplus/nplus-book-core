@@ -7,6 +7,9 @@
 
   `station` 的算法要跟 layouts/index.json 一模一樣：它是 localStorage 的 key，
   全庫都在 nplus.wiki 同一個 origin 底下，靠它把各本書的標記分開。
+
+  `reviewed` 是這一頁 frontmatter 目前的已讀狀態（判準與 index.json 相同），
+  面板的「本章已讀」以它為基線：勾掉一頁已標已讀的章節就是「取消已讀」。
 */}}
 {{- with .File -}}
 <div id="rv-page" hidden
@@ -14,7 +17,8 @@
      data-site="{{ site.BaseURL }}"
      data-book="{{ site.Title }}"
      data-source="{{ .Path }}"
-     data-title="{{ $.Title }}"></div>
+     data-title="{{ $.Title }}"
+     data-reviewed="{{ cond (or (eq $.Params.reviewed true) (eq $.Params.read true)) "true" "false" }}"></div>
 {{- end -}}
 {{- with resources.Get "review.js" -}}
   {{- $js := . | resources.Minify | resources.Fingerprint -}}

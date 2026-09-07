@@ -96,10 +96,13 @@ inline = [['$', '$']]
 側欄的「校閱」開關。開著的時候在內文選取文字會浮出四顆按鈕——**重點／修改／疑問／刪除**
 （修改與疑問要先寫註記）——劃線存在瀏覽器的 localStorage，點既有劃線可以改種類、改註記或
 刪除。右下角的面板可以「備註本章」（沒有選取範圍的整章指示）、勾「本章已讀」、**匯出**
-（下載 JSON；手機上走系統分享）、複製 JSON 到剪貼簿、清除已匯出的標記。
+（下載 JSON；手機上走系統分享）、複製 JSON 到剪貼簿、清除已匯出的標記。「本章已讀」以
+頁面 frontmatter 為基線：源檔已標已讀的章節預設勾著，勾掉就是「取消已讀」；切回基線
+不留標記。
 
 匯出的檔案交給 `/book-apply-review` skill，它把標記變成源檔的改動：重點 → `<mark>`、
-修改 → 依註記改稿、刪除 → 刪、疑問 → 討論後決定、已讀 → frontmatter `reviewed: true`。
+修改 → 依註記改稿、刪除 → 刪、疑問 → 討論後決定、已讀 → frontmatter `reviewed: true`、
+取消已讀 → 移除 `reviewed` 與 `reviewed_date`。
 
 設計上的幾個硬約束：
 
@@ -142,7 +145,7 @@ inline = [['$', '$']]
 
 | 欄位 | 說明 |
 |---|---|
-| `kind` | `highlight`（重點）、`fix`（修改）、`question`（疑問）、`delete`（刪除）、`note`（整章備註，沒有 `exact`）、`reviewed`（本章已讀，沒有 `exact`） |
+| `kind` | `highlight`（重點）、`fix`（修改）、`question`（疑問）、`delete`（刪除）、`note`（整章備註，沒有 `exact`）、`reviewed`（本章已讀，沒有 `exact`）、`unreviewed`（取消已讀，沒有 `exact`） |
 | `source` | 內容檔相對於 `site/content/` 的路徑，由 Hugo 的 `.File.Path` 寫進頁面，直接對回源檔 |
 | `exact` | 選取的**渲染後**純文字，空白已壓成單一空格；源檔裡通常還帶著 `**`、連結等 Markdown 符號 |
 | `prefix` / `suffix` | 前後各 30 字的上下文，用來在同一句出現多次時挑對位置 |

@@ -26,6 +26,7 @@
   var PAGE_TITLE = page.getAttribute('data-title') || document.title;
   var SITE = page.getAttribute('data-site') || '';
   var BOOK = page.getAttribute('data-book') || '';
+  var PAGE_REVIEWED = page.getAttribute('data-reviewed') === 'true';
   var PAGE_PATH = location.pathname;
 
   var FORMAT = 'nplus-review/1';
@@ -628,23 +629,30 @@
     ui.list = list;
   }
 
+  /* 已讀是相對於頁面 frontmatter 的差異：源檔未標而勾起來 → reviewed；
+     源檔已標而勾掉 → unreviewed；切回基線就不留任何標記。 */
   function reviewedItem() {
     for (var i = 0; i < items.length; i++) {
-      if (items[i].kind === 'reviewed' && items[i].source === SOURCE) return items[i];
+      if ((items[i].kind === 'reviewed' || items[i].kind === 'unreviewed') && items[i].source === SOURCE) return items[i];
     }
     return null;
   }
 
+  function isReviewed() {
+    var cur = reviewedItem();
+    return cur ? cur.kind === 'reviewed' : PAGE_REVIEWED;
+  }
+
   function setReviewed(on) {
     var cur = reviewedItem();
-    if (on && !cur) {
+    if (cur) items.splice(items.indexOf(cur), 1);
+    if (on !== PAGE_REVIEWED) {
       items.push({
-        id: uid(), kind: 'reviewed', source: SOURCE, page: PAGE_PATH, title: PAGE_TITLE,
+        id: uid(), kind: on ? 'reviewed' : 'unreviewed', source: SOURCE, page: PAGE_PATH, title: PAGE_TITLE,
         heading: '', headingId: '', exact: '', prefix: '', suffix: '',
         note: '', at: -2, createdAt: new Date().toISOString()
       });
-    } else if (!on && cur) {
-      items.splice(items.indexOf(cur), 1);
+      if (!on) toast('記為取消已讀；套用後側欄的勾勾才會消失');
     }
     save();
   }
@@ -654,7 +662,7 @@
     var text = '本章 ' + here + ' · 全書 ' + items.length;
     if (orphans) text += ' · ' + orphans + ' 筆定位失敗';
     ui.count.textContent = text;
-    ui.readCb.checked = !!reviewedItem();
+    ui.readCb.checked = isReviewed();
 
     ui.list.textContent = '';
     pageItems().filter(function (a) { return a.kind === 'note'; }).forEach(function (a) {
