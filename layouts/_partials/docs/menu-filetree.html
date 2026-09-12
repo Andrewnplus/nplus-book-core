@@ -1,6 +1,8 @@
 {{/*
-  上游 hugo-book v0.14.0 的 menu-filetree.html 整份複製，唯一的改動是
-  book-icon-title 末尾那一行「已讀」勾勾（frontmatter `reviewed: true`）。
+  上游 hugo-book v0.14.0 的 menu-filetree.html 整份複製，改動只有兩處：
+  book-icon-title 末尾那一行「已讀」勾勾（frontmatter `reviewed: true` 或書本
+  慣例的 `read: true`，判準與 index.json 相同），以及章節連結上的三個 data-rv-*
+  屬性——assets/review.js 靠它們在側欄掛勾選框（源檔路徑、標題、已讀基線）。
 
   既然是整份 override，**升級主題時要回來對一次 diff**：上一次漂移是上游改用
   partialCached 而這裡沒跟上，於是每頁都重建整棵選單樹，246 章的書代價明顯。
@@ -29,11 +31,12 @@
 {{ define "book-page-link" }}{{/* (dict "Page" .Page "CurrentPage" .CurrentPage) */}}
   {{ $current := eq .CurrentPage .Page }}
   {{ $ancestor := .Page.IsAncestor .CurrentPage }}
+  {{ $rvReviewed := or (eq .Page.Params.reviewed true) (eq .Page.Params.read true) }}
 
   {{ if .Page.Params.BookCollapseSection }}
     <input type="checkbox" id="section-{{ md5 .Page }}" class="toggle" {{ if or $current $ancestor }}checked{{ end }} />
     <label for="section-{{ md5 .Page }}" class="flex">
-      <a {{ if .Page.Content }}href="{{ .Page.RelPermalink }}"{{ else }}role="button"{{ end }} class="{{ if $current }}active{{ end }}">
+      <a {{ if .Page.Content }}href="{{ .Page.RelPermalink }}"{{ else }}role="button"{{ end }} class="{{ if $current }}active{{ end }}"{{ with .Page.File }} data-rv-source="{{ .Path }}" data-rv-title="{{ $.Page.Title }}" data-rv-reviewed="{{ $rvReviewed }}"{{ end }}>
         {{ template "book-icon-title" .Page -}}
       </a>
       <img src="{{ partial "docs/icon" "chevron-right" }}" class="book-icon" alt="{{ partial "docs/text/i18n" "Expand" }}" />
@@ -43,7 +46,7 @@
       {{ template "book-icon-title" .Page -}}
     </a>
   {{ else if .Page.Content }}
-    <a href="{{ .Page.RelPermalink }}" class="{{ if $current }}active{{ end }}">
+    <a href="{{ .Page.RelPermalink }}" class="{{ if $current }}active{{ end }}"{{ with .Page.File }} data-rv-source="{{ .Path }}" data-rv-title="{{ $.Page.Title }}" data-rv-reviewed="{{ $rvReviewed }}"{{ end }}>
       {{ template "book-icon-title" .Page -}}
     </a>
   {{ else }}
@@ -58,5 +61,5 @@
   <img src="{{ partial "docs/icon" . }}" class="book-icon" alt="{{ partial "docs/text/i18n" . }}" />
 {{- end -}}
 {{- partial "docs/title" .Page -}}
-{{- if .Page.Params.reviewed }}<span class="reviewed-check" title="已讀" aria-label="已讀">✓</span>{{ end -}}
+{{- if or (eq .Page.Params.reviewed true) (eq .Page.Params.read true) }}<span class="reviewed-check" title="已讀" aria-label="已讀">✓</span>{{ end -}}
 {{ end }}
